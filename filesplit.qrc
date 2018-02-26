@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/divide.png</file>
+        <file>translator/Lang_ko_KR.qm</file>
+        <file>img/folder.png</file>
+        <file>img/change.png</file>
+    </qresource>
+</RCC>
