@@ -76,7 +76,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>0</x>
       <y>180</y>
       <width>81</width>
       <height>21</height>
@@ -89,7 +89,7 @@
    <widget class="QLineEdit" name="lineEdit_SplitNumber">
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>90</x>
       <y>180</y>
       <width>101</width>
       <height>20</height>
@@ -155,6 +155,29 @@
        <normaloff>:/img/folder.png</normaloff>:/img/folder.png</iconset>
      </property>
     </widget>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>180</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Create File</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_FileNumber">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>180</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

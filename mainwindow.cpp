@@ -8,6 +8,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     Setting=new QSettings("EachOne","FileSplit",this);
     ui->lineEdit_SaveFolderSelect->setText(Setting->value("SaveFolder").toString());
+    ui->lineEdit_FileNumber->setValidator(new QIntValidator(1,999999,this));
+    ui->lineEdit_SplitNumber->setValidator(new QIntValidator(1,999999,this));
 }
 
 MainWindow::~MainWindow()
@@ -39,7 +41,7 @@ void MainWindow::on_pushButton_SaveFolderSelect_clicked()
 void MainWindow::FileSplitSave()
 {
     QFile File(ui->lineEdit_SplitFileSelect->text());
-
+    bool FileEnd=false;
     if(!File.open(QFile::ReadOnly|QFile::Text) || !File.exists())
     {
         QMessageBox::warning(this,tr("Warning"),tr("File is not Found or File Read Error"),QMessageBox::Ok);
@@ -51,54 +53,103 @@ void MainWindow::FileSplitSave()
     ProgressDlg->setWindowTitle(tr("FileSplit"));
     ProgressDlg->show();
 
-    QTextStream FileStream(&File);
-    int ContextCount=1,FileCount=1;
+    QTextStream FileStream(&File),SaveFileStream;
+    int ContextCount=0,FileCount=1;
     QFile SaveFile;
-    QTextStream SaveFileStream;
-    QString Test=FileStream.readAll();
-    int Sum=(float)Test.count("\n")/ui->lineEdit_SplitNumber->text().toInt(),PreSum=0;
+    QString TmpFileName=FileStream.readAll();
+    int Sum=TmpFileName.count("\n"),PreSum=0,Count=0;
+    QString *ListContext=new QString[ui->lineEdit_FileNumber->text().toInt()];
+    QString FileContext,TempStr;
     FileStream.seek(0);
+
     while (!FileStream.atEnd())
     {
-        if(ContextCount==1)
-        {
-            if(FileCount<10)
-            {
-                SaveFile.setFileName("000");
-            }
-            else if(FileCount>=10 && FileCount<100)
-            {
-                SaveFile.setFileName("00");
-            }
-            else if(FileCount>=100 && FileCount<1000)
-            {
-                SaveFile.setFileName("0");
-            }
-            else if(FileCount>=1000 &&FileCount<10000)
-            {
-                SaveFile.setFileName("");
-            }
-            SaveFile.setFileName(QString("%1/%2%3.use").arg(ui->lineEdit_SaveFolderSelect->text()).arg(SaveFile.fileName()).arg(FileCount));
-            SaveFile.open(QFile::ReadWrite|QFile::Text);
-            SaveFileStream.setDevice(&SaveFile);
-            FileCount++;
-        }
-        SaveFileStream<<FileStream.readLine()<<"\n";
-
         if(ContextCount==ui->lineEdit_SplitNumber->text().toInt())
         {
-            qDebug()<<Sum<<(float)FileCount/Sum*100;
-            if(FileCount>0 && PreSum!=(float)FileCount/Sum*100)
-            {
-                PreSum=(float)FileCount/Sum*100;
-                ProgressDlg->setValue(PreSum);
-            }
-            SaveFile.close();
+            ListContext[FileCount-1].append(FileContext);
             ContextCount=0;
+            FileContext.clear();
+
+            FileCount++;
         }
+
+        if(FileCount==ui->lineEdit_FileNumber->text().toInt()+1)
+        {
+            FileCount=1;
+        }
+        TempStr=FileStream.readLine()+"\n";
+        FileContext.append(TempStr);
         ContextCount++;
+
+        if(Count>0 && PreSum!=(float)Count/Sum*100)
+        {
+            PreSum=(float)Count/Sum*100;
+            ProgressDlg->setValue(PreSum);
+        }
+        Count++;
+    }
+    FileEnd=true;
+
+    for(int i=0; i<ui->lineEdit_FileNumber->text().toInt(); i++)
+    {
+        if(i+1<10)
+        {
+            TmpFileName="000";
+        }
+        else if(i+1>=10 && i+1<100)
+        {
+            TmpFileName="00";
+        }
+        else if(i+1>=100 && i+1<1000)
+        {
+            TmpFileName="0";
+        }
+        else
+        {
+            TmpFileName="";
+        }
+        QFile OpenFile(QString("%1/%2%3.use").arg(ui->lineEdit_SaveFolderSelect->text()).arg(TmpFileName).arg(i+1));
+        OpenFile.open(QFile::ReadWrite|QFile::Text);
+        SaveFileStream.setDevice(&OpenFile);
+        SaveFileStream<<ListContext[i];
+        OpenFile.close();
     }
 
+    if(!FileContext.isEmpty() && FileEnd && ContextCount==ui->lineEdit_SplitNumber->text().toInt())
+    {
+        if(FileCount<10)
+        {
+            TmpFileName="000";
+        }
+        else if(FileCount>=10 && FileCount<100)
+        {
+            TmpFileName="00";
+        }
+        else if(FileCount>=100 && FileCount<1000)
+        {
+            TmpFileName="0";
+        }
+        else
+        {
+            TmpFileName="";
+        }
+        QFile OpenFile(QString("%1/%2%3.use").arg(ui->lineEdit_SaveFolderSelect->text()).arg(TmpFileName).arg(FileCount));
+        OpenFile.open(QFile::ReadWrite|QFile::Append|QFile::Text);
+        SaveFileStream.setDevice(&OpenFile);
+        SaveFileStream<<FileContext;
+        OpenFile.close();
+    }
+
+    else if(!FileContext.isEmpty())
+    {
+        SaveFile.setFileName(QString("%1/Remain.use").arg(ui->lineEdit_SaveFolderSelect->text()));
+        SaveFile.open(QFile::ReadWrite|QFile::Text);
+        SaveFileStream.setDevice(&SaveFile);
+        SaveFileStream<<FileContext;
+        SaveFile.close();
+    }
+
+    delete [] ListContext;
     File.close();
     ProgressDlg->deleteLater();
     QMessageBox::information(this,tr("Information"),tr("Files Created."),QMessageBox::Ok);
