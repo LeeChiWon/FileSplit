@@ -27,7 +27,7 @@ void MainWindow::on_pushButton_Change_clicked()
 
 void MainWindow::on_pushButton_SplitFileSelect_clicked()
 {
-    ui->lineEdit_SplitFileSelect->setText(QFileDialog::getOpenFileName(this,tr("Split File Select"),"",tr("All Files (*.*);")));
+    ui->lineEdit_SplitFileSelect->setText(QFileDialog::getOpenFileName(this,tr("Split File Select"),"",tr("All Files (*.*);;")));
 }
 
 void MainWindow::on_pushButton_SaveFolderSelect_clicked()
@@ -87,7 +87,7 @@ void MainWindow::FileSplitSave()
 
         if(ContextCount==ui->lineEdit_SplitNumber->text().toInt())
         {
-            //qDebug()<<(float)FileCount/Sum*100;
+            qDebug()<<Sum<<(float)FileCount/Sum*100;
             if(FileCount>0 && PreSum!=(float)FileCount/Sum*100)
             {
                 PreSum=(float)FileCount/Sum*100;
